@@ -44,3 +44,48 @@ def create_account(account: dict):
 
     accounts.append(new_account)
     return new_account
+
+@app.post("/accounts/{account_id}/deposit")
+def deposit(account_id: int, data: dict):
+    for account in accounts:
+        if account["id"] == account_id:
+            if "amount" not in data:
+                raise HTTPException(status_code=400, detail="Missing amount")
+
+            amount = data["amount"]
+
+            if amount <= 0:
+                raise HTTPException(status_code=400, detail="Deposit amount must be positive")
+
+            account["balance"] += amount
+
+            return {
+                "message": "Deposit successful",
+                "account": account
+            }
+
+    raise HTTPException(status_code=404, detail="Account not found")
+
+@app.post("/accounts/{account_id}/withdraw")
+def withdraw(account_id: int, data: dict):
+    for account in accounts:
+        if account["id"] == account_id:
+            if "amount" not in data:
+                raise HTTPException(status_code=400, detail="Missing amount")
+
+            amount = data["amount"]
+
+            if amount <= 0:
+                raise HTTPException(status_code=400, detail="Withdrawal amount must be positive")
+
+            if amount > account["balance"]:
+                raise HTTPException(status_code=400, detail="Insufficient funds")
+
+            account["balance"] -= amount
+
+            return {
+                "message": "Withdrawal successful",
+                "account": account
+            }
+
+    raise HTTPException(status_code=404, detail="Account not found")
